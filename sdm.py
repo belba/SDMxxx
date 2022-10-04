@@ -264,7 +264,7 @@ else:
     try:
         instrument = minimalmodbus.Instrument( args.device, args.address)
         instrument.serial.baudrate = args.baudrate
-        instrument.serial.timeout = 1
+        instrument.serial.timeout = 5
         instrument.debug = False
         instrument.clear_buffers_before_each_transaction = True
         sdm_register = get_sdm_register(args.model)
@@ -305,8 +305,8 @@ else:
                     sys.exit(1)
             time.sleep(SLEEP)
     except BaseException:
-        print(BaseException)
-        print("can not connect to device")
-        print()
-        show_connection_parameters()
+        #print(BaseException)
+        #print("can not connect to device")
+        #print()
+        #show_connection_parameters()
         sys.exit(1)
