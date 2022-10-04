@@ -16,7 +16,7 @@ BAUDRATE = 38400
 def helpmessage():
     print('Options:')
     print('-d --device [Devicepath], Path to serial device. Default: ' + METER_SERIALPORT)
-    print('-a --address [Modbusaddress], Modbusaddresss for the device. Default: ' + METER_MODBUSADDRESS)
+    print('-a --address [Modbusaddress], Modbusaddresss for the device. Default: ' + str(METER_MODBUSADDRESS))
     print('-m --model [Devicemodell], Default: ' + METER_MODEL)
     print('           aviable models: SDM630, SDM230, SDM220, SDMsimple')
     print('-o --output [outputformat], Default: ' + OUTPUTFORMAT)
@@ -25,6 +25,15 @@ def helpmessage():
     print('-s --sleep [sleeptime in seconds], Default: ' + str(SLEEP))
     print('-b --baudrate [baudrate], Default: ' + str(BAUDRATE))
     print()
+
+def show_connection_parameters():
+    print("used connection parameters:")
+    print("Serial device: " + args.device)
+    print("Serial baudrate: " + str(args.baudrate))
+    print("Modbusaddress: " + str(args.address))
+    print("Model: " + args.model)
+    print("Outputformat: " + args.outputformat)
+    print("Measurement: " + args.measurement)
 
 # Define Registersets for the different Models
 def get_sdm_register(sdm_model="SDM630"):
@@ -180,6 +189,21 @@ def get_sdm_register(sdm_model="SDM630"):
                 "Pr_L2_tot": {"port": 378, "digits": 2, "Unit": "kvarh", "use": True},
                 "Pr_L3_tot": {"port": 380, "digits": 2, "Unit": "kvarh", "use": True},
             }
+    elif sdm_model == "SDM630tiny":
+            sdm_register = {
+                "U_L1": {"port": 0, "digits": 2, "Unit": "V", "use": True},
+                "U_L2": {"port": 2, "digits": 2, "Unit": "V", "use": True},
+                "U_L3": {"port": 4, "digits": 2, "Unit": "V", "use": True},
+                "I_L1": {"port": 6, "digits": 2, "Unit": "A", "use": True},
+                "I_L2": {"port": 8, "digits": 2, "Unit": "A", "use": True},
+                "I_L3": {"port": 10, "digits": 2, "Unit": "A", "use": True},
+                "P_L1": {"port": 12, "digits": 2, "Unit": "W", "use": True},
+                "P_L2": {"port": 14, "digits": 2, "Unit": "W", "use": True},
+                "P_L3": {"port": 16, "digits": 2, "Unit": "W", "use": True},
+                "freq": {"port": 70, "digits": 2, "Unit": "Hz", "use": True},
+                "P_sum_import": {"port": 72, "digits": 2, "Unit": "kWh", "use": True},
+                "P_sum_export": {"port": 74, "digits": 2, "Unit": "kWH", "use": True},
+            }
     else:
         print("model not found")
         sys.exit(1)
@@ -195,7 +219,7 @@ def get_cli_arguments(scan_additional_arguments=None):
                         nargs='?', default=METER_SERIALPORT, const=None,
                         help='Path to serial device like /dev/ttyUSB0.'
                              'Default: %s' % METER_SERIALPORT)
-    parser.add_argument('-a', '--address',
+    parser.add_argument('-a', '--address', type=int, 
                         nargs='?', default=METER_MODBUSADDRESS, const=None,
                         help='Modbusaddress of the device.'
                              'Default: %s' % METER_MODBUSADDRESS)
@@ -211,11 +235,11 @@ def get_cli_arguments(scan_additional_arguments=None):
                         nargs='?', default=MEASUREMENT, const=None,
                         help='Output format, default CLI.'
                              'Default: %s' % MEASUREMENT)
-    parser.add_argument('-s', '--sleep',
+    parser.add_argument('-s', '--sleep', type=int,
                         nargs='?', default=SLEEP, const=None,
                         help='Output format, default CLI.'
                              'Default: %s' % SLEEP)
-    parser.add_argument('-b', '--baudrate',
+    parser.add_argument('-b', '--baudrate', type=int,
                         nargs='?', default=BAUDRATE, const=None,
                         help='Output format, default CLI.'
                              'Default: %s' % BAUDRATE)
@@ -226,9 +250,9 @@ def get_cli_arguments(scan_additional_arguments=None):
 
 args = get_cli_arguments()
 
-print (args.device)
-print (str(args.baudrate))
-print (str(args.address))
+#print (args.device)
+#print (str(args.baudrate))
+#print (str(args.address))
 wurst = args.device
 
 if not args.device:
@@ -238,21 +262,15 @@ if not args.device:
     sys.exit(1)
 else:
     try:
-#       instrument = minimalmodbus.Instrument( args.device, args.address, True, True)
         instrument = minimalmodbus.Instrument( args.device, args.address)
-#        instrument = minimalmodbus.Instrument( args.device, 1)
-#        instrument = minimalmodbus.Instrument("/dev/ttyUSB0", 1)
-#        instrument.serial.port = args.device
         instrument.serial.baudrate = args.baudrate
-#        instrument.address = args.address
-#        instrument.debug = True
-#        instrument.close_port_after_each_call = True
+        instrument.serial.timeout = 1
+        instrument.debug = False
+        instrument.clear_buffers_before_each_transaction = True
         sdm_register = get_sdm_register(args.model)
-        print("keywalk")
         for key in sdm_register:
             if sdm_register[key]["use"] == True:
                 if args.output == "CLI":
-                    print("CLI")
                     print(key + ": " 
                         + str(
                             round(
@@ -267,21 +285,28 @@ else:
                         + sdm_register[key]["Unit"]
                     )
                 elif args.output == "telegraf":
-                    print("telegraf")
-#                    print("SDMTEST,address=" + str(args.address)  
-#                        + ",model=" + args.model
-#                        + "," + key + "=" + str(round(instrument.read_float(functioncode=4,registeraddress=sdm_register[key]["port"],number_of_registers=sdm_register[key]["digits"]),2))
-#                        + ",unit=\"" + sdm_register[key]["Unit"] + "\""
-#                    )
+                    print("SDMTEST,address=" + str(args.address)  
+                        + ",model=" + args.model
+                        + "," + key + "=" + str(
+                            round(
+                                instrument.read_float(
+                                    functioncode=4,
+                                    registeraddress=sdm_register[key]["port"],
+                                    number_of_registers=sdm_register[key]["digits"]
+                                ),2
+                            )
+                        )
+                        + ",unit=\"" + sdm_register[key]["Unit"] + "\""
+                    )
                 else:
                     print("outputformat not found")
                     print()
-                    helpmessage()
+                    show_connection_parameters()
                     sys.exit(1)
             time.sleep(SLEEP)
     except BaseException:
         print(BaseException)
         print("can not connect to device")
         print()
-        helpmessage()
+        show_connection_parameters()
         sys.exit(1)
