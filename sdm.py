@@ -8,7 +8,7 @@ import minimalmodbus
 METER_SERIALPORT = "/dev/ttyUSB0"
 METER_MODBUSADDRESS = 1
 METER_MODEL="SDM630"
-OUTPUTFORMAT = "CLI"
+OUTPUTFORMAT = "cli"
 MEASUREMENT = "SDMTEST"
 SLEEP = 0
 BAUDRATE = 38400
@@ -20,7 +20,7 @@ def helpmessage():
     print('-m --model [Devicemodell], Default: ' + METER_MODEL)
     print('           aviable models: SDM630, SDM230, SDM220, SDMsimple')
     print('-o --output [outputformat], Default: ' + OUTPUTFORMAT)
-    print('           aviable output formats: CLI, telegraf')
+    print('           aviable output formats: cli, influxlineprotocol')
     print('-t --measurement [measurement], Default: ' + MEASUREMENT)
     print('-s --sleep [sleeptime in seconds], Default: ' + str(SLEEP))
     print('-b --baudrate [baudrate], Default: ' + str(BAUDRATE))
@@ -32,7 +32,7 @@ def show_connection_parameters():
     print("Serial baudrate: " + str(args.baudrate))
     print("Modbusaddress: " + str(args.address))
     print("Model: " + args.model)
-    print("Outputformat: " + args.outputformat)
+    print("Outputformat: " + args.output)
     print("Measurement: " + args.measurement)
 
 # Define Registersets for the different Models
@@ -225,23 +225,23 @@ def get_cli_arguments(scan_additional_arguments=None):
                              'Default: %s' % METER_MODBUSADDRESS)
     parser.add_argument('-m', '--model',
                         nargs='?', default=METER_MODEL, const=None,
-                        help='Modell of the device, default SDM630.'
+                        help='Modell of the device'
                              'Default: %s' % METER_MODEL)
     parser.add_argument('-o', '--output',
                         nargs='?', default=OUTPUTFORMAT, const=None,
-                        help='Output format, default CLI.'
+                        help='Output format'
                              'Default: %s' % OUTPUTFORMAT)
     parser.add_argument('-t', '--measurement',
                         nargs='?', default=MEASUREMENT, const=None,
-                        help='Output format, default CLI.'
+                        help='Output format'
                              'Default: %s' % MEASUREMENT)
     parser.add_argument('-s', '--sleep', type=int,
                         nargs='?', default=SLEEP, const=None,
-                        help='Output format, default CLI.'
+                        help='Output format'
                              'Default: %s' % SLEEP)
     parser.add_argument('-b', '--baudrate', type=int,
                         nargs='?', default=BAUDRATE, const=None,
-                        help='Output format, default CLI.'
+                        help='Output format'
                              'Default: %s' % BAUDRATE)
     if scan_additional_arguments:
         scan_additional_arguments(parser)
@@ -270,7 +270,7 @@ else:
         sdm_register = get_sdm_register(args.model)
         for key in sdm_register:
             if sdm_register[key]["use"] == True:
-                if args.output == "CLI":
+                if args.output == "cli":
                     print(key + ": " 
                         + str(
                             round(
@@ -284,7 +284,7 @@ else:
                         ) 
                         + sdm_register[key]["Unit"]
                     )
-                elif args.output == "telegraf":
+                elif args.output == "influxlineprotocol":
                     print("SDMTEST,address=" + str(args.address)  
                         + ",model=" + args.model
                         + "," + key + "=" + str(
