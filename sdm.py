@@ -286,8 +286,8 @@ else:
                     )
                 elif args.output == "influxlineprotocol":
                     print("SDMTEST,address=" + str(args.address)  
-                        + ",model=" + args.model
-                        + "," + key + "=" + str(
+                        + ",model='" + args.model + "'"
+                        + " " + key + "=" + str(
                             round(
                                 instrument.read_float(
                                     functioncode=4,
@@ -296,7 +296,7 @@ else:
                                 ),2
                             )
                         )
-                        + ",unit=\"" + sdm_register[key]["Unit"] + "\""
+#                        + ",unit='" + sdm_register[key]["Unit"] + "'"
                     )
                 else:
                     print("outputformat not found")
