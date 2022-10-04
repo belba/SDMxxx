@@ -6,7 +6,7 @@ import minimalmodbus
 
 # Define CLI Default paramater
 METER_SERIALPORT = "/dev/ttyUSB0"
-METER_MODBUSADDRESS = "1"
+METER_MODBUSADDRESS = 1
 METER_MODEL="SDM630"
 OUTPUTFORMAT = "CLI"
 MEASUREMENT = "SDMTEST"
@@ -238,12 +238,14 @@ if not args.device:
     sys.exit(1)
 else:
     try:
-#        instrument = minimalmodbus.Instrument( args.device, args.address, True, True)
-        instrument = minimalmodbus.Instrument("/dev/ttyUSB0", 1)
+#       instrument = minimalmodbus.Instrument( args.device, args.address, True, True)
+        instrument = minimalmodbus.Instrument( args.device, args.address)
+#        instrument = minimalmodbus.Instrument( args.device, 1)
+#        instrument = minimalmodbus.Instrument("/dev/ttyUSB0", 1)
 #        instrument.serial.port = args.device
-#        instrument.serial.baudrate = args.baudrate
+        instrument.serial.baudrate = args.baudrate
 #        instrument.address = args.address
-        instrument.debug = True
+#        instrument.debug = True
 #        instrument.close_port_after_each_call = True
         sdm_register = get_sdm_register(args.model)
         print("keywalk")
