@@ -209,7 +209,6 @@ def get_sdm_register(sdm_model="SDM630"):
         sys.exit(1)
     return sdm_register
 
-
 def get_cli_arguments(scan_additional_arguments=None):
     parser = argparse.ArgumentParser()
     parser.prog='sdm'
@@ -253,7 +252,8 @@ args = get_cli_arguments()
 #print (args.device)
 #print (str(args.baudrate))
 #print (str(args.address))
-wurst = args.device
+#print (str(args.model))
+
 
 if not args.device:
     print('device required')
@@ -268,6 +268,8 @@ else:
         instrument.debug = False
         instrument.clear_buffers_before_each_transaction = True
         sdm_register = get_sdm_register(args.model)
+        if args.measurement == MEASUREMENT:
+            measurement ==  str(args.address) + "_" + args.model
         for key in sdm_register:
             if sdm_register[key]["use"] == True:
                 if args.output == "cli":
@@ -285,7 +287,7 @@ else:
                         + sdm_register[key]["Unit"]
                     )
                 elif args.output == "influxlineprotocol":
-                    print("SDMTEST,address=" + str(args.address)  
+                    print(measurement + ",address=" + str(args.address)  
                         + ",model='" + args.model + "'"
                         + " " + key + "=" + str(
                             round(
