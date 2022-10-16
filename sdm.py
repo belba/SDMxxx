@@ -269,7 +269,7 @@ else:
         instrument.clear_buffers_before_each_transaction = True
         sdm_register = get_sdm_register(args.model)
         if args.measurement == MEASUREMENT:
-            measurement ==  str(args.address) + "_" + args.model
+            measurement = str(args.address) + "_" + args.model
         for key in sdm_register:
             if sdm_register[key]["use"] == True:
                 if args.output == "cli":
